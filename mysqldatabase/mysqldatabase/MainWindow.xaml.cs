@@ -18,15 +18,38 @@ namespace mysqldatabase
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
+	
+	
 	public partial class MainWindow : Window
 	{
+		// Load data base
+		TestDatabase ddbb = null;
+
 		public MainWindow()
 		{
 			InitializeComponent();
 
 			// Load data base
-			TestDatabase ddbb = TestDatabase.instance;
+			ddbb = TestDatabase.instance;
+		}
 
+		private void enter_Click(object sender, RoutedEventArgs e)
+		{
+			User user = ddbb.checkUser(textLogin.Text, textPass.Password);
+			if(user == null)
+			{
+				// NOT IN DATABASE or PASSWORD INCORRECT
+				Console.WriteLine("ERROR!!!!");
+			}
+			else
+			{
+				Console.WriteLine("Bienvenido " + user.name);
+			}
+		}
+
+		private void Window_Closed(object sender, EventArgs e)
+		{
+			ddbb.close();
 		}
 	}
 }
