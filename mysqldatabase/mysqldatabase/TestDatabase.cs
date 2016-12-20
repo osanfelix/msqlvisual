@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using MySql.Data;
 using MySql.Data.MySqlClient;
+using System.Security.Cryptography;
 
 namespace mysqldatabase
 {
@@ -27,14 +28,17 @@ namespace mysqldatabase
 		// ATTRIBUTES
 		protected string connStr;
 		protected MySqlConnection connection = null;
-		protected string serverName = null;
-		protected string serverUser = null;
+		protected string serverName = "10.0.0.7";
+		protected string serverUser = "admin";
+		protected string database = "test";
+		protected string password = "admintest";
+
 		protected uint serverPort = 3306;
 
 		protected TestDatabase()
 		{
 			// Create connection to MySql database
-			connStr = "server=internetserver.no-ip.org;user=admin;database=test;port=3306;password=admintest;";
+			connStr = "server=" + serverName + "; user=" + serverUser + ";database=" + database + ";port=" + serverPort + ";password=" + password + ";";
 			connection = new MySqlConnection(connStr);
 			try
 			{
@@ -58,10 +62,9 @@ namespace mysqldatabase
 
 		public bool addUser(User newUser)
 		{
-			// TODO
 			try
 			{
-				string sql = "iNSERT INTO user (name, password) VALUES (@nombre, @pass)";
+				string sql = "iNSERT INTO user (name, pass) VALUES (@nombre, @pass)";
 				MySqlCommand cmd = new MySqlCommand(sql, connection);
 				cmd.Parameters.AddWithValue("@nombre", newUser.name);
 				cmd.Parameters.AddWithValue("@pass", newUser.pass);
@@ -71,9 +74,8 @@ namespace mysqldatabase
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine(ex.StackTrace);
+				Console.WriteLine(ex.ToString());
 				return false;
-				
 			}
 		}
 
@@ -87,7 +89,8 @@ namespace mysqldatabase
 			MySqlDataReader rdr = cmd.ExecuteReader();
 			if (rdr.Read())
 			{
-				User dataUser = new User((string)rdr["name"], (string)rdr["pass"]);
+				User dataUser = new User((string)rdr["name"]);
+				dataUser.hashPass = (string)rdr["pass"];
 				rdr.Close();
 				return dataUser.checkPassword(password) ? dataUser : null;
 			}
@@ -107,32 +110,59 @@ namespace mysqldatabase
 			// TODO
 			return null;
 		}
-
 	}
 
 	public class User
 	{
 		String _name;
-		String _pass;	// MD5 password
+		String _pass = null;	// MD5 password
 
+		// CONSTRUCTOR
 		public User(string name, string pass)
 		{
 			_name = name;
-			_pass = pass;   // TODO MD5 HASH
+			this.pass = pass;
 		}
 
-		public string name {get{return _name;}}
-		public string pass { get { return _pass; } }
+		public User(string name)
+		{
+			_name = name;
+		}
 
+		// GETTERS & SETTERS
+		public string name
+		{
+			get { return _name; }
+		}
+		public string pass
+		{
+			get { return _pass; }
+			set { _pass = doHash(value); }
+		}
+		public string hashPass
+		{
+			get { return _pass; }
+			set { _pass = value; }
+		}
+
+		// PUBLIC METHODS
 		public bool save()
 		{
-			// TODO
-			TestDatabase.instance.addUser(this);
-			return true;
+			return TestDatabase.instance.addUser(this);
 		}
+
 		public bool checkPassword(string plainPass)
 		{
-			return plainPass == _pass;
+			return doHash(plainPass) == _pass;
+		}
+
+		// PRIVATE METHODS
+		protected string doHash(String str)
+		{
+			MD5 hasher = MD5.Create();
+			// Do Hash
+			byte[] hash = hasher.ComputeHash(Encoding.UTF8.GetBytes(str));
+			return BitConverter.ToString(hash).Replace("-", "");
 		}
 	}
 }

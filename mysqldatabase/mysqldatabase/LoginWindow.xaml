@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="258" Width="408" Closed="Window_Closed">
     <StackPanel HorizontalAlignment="Left" Height="174" Margin="64,25,0,0" VerticalAlignment="Top" Width="274">
-        <Button x:Name="add" Content="Alta" Margin="0,10,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="75"/>
+        <Button x:Name="add" Content="Alta" Margin="0,10,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="75" Click="add_Click"/>
         <Label x:Name="labelLogin" Content="Login" HorizontalAlignment="Left" VerticalAlignment="Top"/>
         <TextBox x:Name="textLogin"  TextWrapping="Wrap" VerticalAlignment="Top"/>
         <Label x:Name="labelPass" Content="Password" HorizontalAlignment="Left" VerticalAlignment="Top"/>
